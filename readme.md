@@ -200,7 +200,7 @@ GET /api/health
 
 ### Prerequisites
 
-- Node.js 16+
+- Node.js 20+
 - PostgreSQL database
 - pnpm package manager
 
@@ -222,10 +222,12 @@ pnpm start
 
 ### Environment Variables
 
-Create a `.env` file with:
+Duplicate the `.env.example` file to create a `.env` file with:
 
 ```
-NODE_ENV=development
-PORT=3000
-DATABASE_URL=postgresql://username:password@localhost:5432/booking_db
+DB_NAME=booking_app
+DB_USER=horlakz
+DB_PASSWORD=password
+DB_HOST=localhost
+DB_PORT=5432
 ```
