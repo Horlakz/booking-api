@@ -1,10 +1,10 @@
-import { Booking, BookingCreationAttributes } from "@/models/booking.model";
+import { Booking } from "@/entity/booking.entity";
 
 export interface IBookingRepository {
   findAll(options?: {
     limit?: number;
     offset?: number;
-  }): Promise<{ rows: Booking[]; count: number }>;
+  }): Promise<[Booking[], number]>;
 
   findById(id: string): Promise<Booking | null>;
 
@@ -24,3 +24,17 @@ export interface IBookingRepository {
 
   delete(id: string): Promise<boolean>;
 }
+
+export interface BookingAttributes {
+  id: string;
+  propertyId: string;
+  username: string;
+  startDate: Date; // use Date for better TypeORM mapping
+  endDate: Date;
+  createdAt: Date;
+}
+
+export type BookingCreationAttributes = Omit<
+  BookingAttributes,
+  "id" | "createdAt"
+>;

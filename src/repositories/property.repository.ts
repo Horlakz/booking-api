@@ -1,10 +1,11 @@
-import { IPropertyRepository } from "@/interfaces/property.repository.interface";
-import { Property } from "@/models";
-import { Booking } from "@/models/booking.model";
-import { PropertyCreationAttributes } from "@/models/property.model";
-import { Op } from "sequelize";
+import { AppDataSource } from "@/config/data-source";
+import { Property } from "@/entity/property.entity";
+import { PropertyCreationAttributes } from "@/interfaces/property.repository.interface";
+import { LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 
-export class PropertyRepository implements IPropertyRepository {
+export class PropertyRepository {
+  private propertyRepo = AppDataSource.getRepository(Property);
+
   async findAll(options?: {
     limit?: number;
     offset?: number;
@@ -14,60 +15,56 @@ export class PropertyRepository implements IPropertyRepository {
     const whereClause: any = {};
 
     if (options?.availableFrom && options?.availableTo) {
-      whereClause[Op.and] = [
-        { availablFrom: { [Op.lte]: options.availableFrom } },
-        { availableTo: { [Op.gte]: options.availableTo } },
-      ];
+      whereClause.availablFrom = LessThanOrEqual(options.availableFrom);
+      whereClause.availableTo = MoreThanOrEqual(options.availableTo);
     }
 
-    const queryOptions: any = {
+    const findOptions: any = {
       where: whereClause,
-      order: [["createdAt", "DESC"]],
+      order: { createdAt: "DESC" },
     };
-
-    if (options?.limit !== undefined) {
-      queryOptions.limit = options.limit;
+    if (typeof options?.offset === "number") {
+      findOptions.skip = options.offset;
     }
-    if (options?.offset !== undefined) {
-      queryOptions.offset = options.offset;
+    if (typeof options?.limit === "number") {
+      findOptions.take = options.limit;
     }
-
-    return await Property.findAndCountAll(queryOptions);
+    return await this.propertyRepo.findAndCount(findOptions);
   }
 
   async findById(id: string) {
-    return await Property.findByPk(id);
+    return await this.propertyRepo.findOneBy({ id });
   }
 
   async findAvailability(propertyId: string) {
-    const property = await Property.findByPk(propertyId, {
-      include: [
-        {
-          model: Booking,
-          as: "bookings",
-          attributes: ["startDate", "endDate"],
-          order: [["startDate", "ASC"]],
+    return await this.propertyRepo.findOne({
+      where: { id: propertyId },
+      relations: ["bookings"],
+      order: {
+        bookings: { startDate: "ASC" },
+      },
+      select: {
+        bookings: {
+          startDate: true,
+          endDate: true,
         },
-      ],
+      },
     });
-    return property;
   }
 
   async create(propertyData: PropertyCreationAttributes) {
-    return await Property.create(propertyData);
+    const property = this.propertyRepo.create(propertyData);
+    return await this.propertyRepo.save(property);
   }
 
   async update(id: string, propertyData: Partial<PropertyCreationAttributes>) {
-    const [updatedRowsCount] = await Property.update(propertyData, {
-      where: { id },
-    });
-    return updatedRowsCount > 0;
+    const result = await this.propertyRepo.update(id, propertyData);
+    return result.affected !== undefined && result.affected > 0;
   }
 
   async delete(id: string) {
-    const deletedRowsCount = await Property.destroy({
-      where: { id },
-    });
-    return deletedRowsCount > 0;
+    const result = await this.propertyRepo.delete(id);
+    return result.affected !== undefined;
+    // && result.affected > 0;
   }
 }

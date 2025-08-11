@@ -1,4 +1,4 @@
-import { Property, PropertyCreationAttributes } from "@/models/property.model";
+import { Property } from "@/entity/property.entity";
 
 export interface IPropertyRepository {
   findAll(options?: {
@@ -6,7 +6,7 @@ export interface IPropertyRepository {
     offset?: number;
     availableFrom?: string;
     availableTo?: string;
-  }): Promise<{ rows: Property[]; count: number }>;
+  }): Promise<[Property[], number]>; // Fixed return type
 
   findById(id: string): Promise<Property | null>;
 
@@ -21,3 +21,19 @@ export interface IPropertyRepository {
 
   delete(id: string): Promise<boolean>;
 }
+
+export interface PropertyAttributes {
+  id: string;
+  title: string;
+  description: string;
+  pricePerNight: number;
+  availableFrom: Date; // fixed typo & use Date
+  availableTo: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type PropertyCreationAttributes = Omit<
+  PropertyAttributes,
+  "id" | "createdAt" | "updatedAt"
+>;

@@ -1,41 +1,41 @@
-import { Op } from "sequelize";
+import { Between, LessThanOrEqual, MoreThanOrEqual, Not } from "typeorm";
 
-import { IBookingRepository } from "@/interfaces/booking.repository.interface";
-import { Booking, Property } from "@/models";
-import { BookingCreationAttributes } from "@/models/booking.model";
+import { AppDataSource } from "@/config/data-source";
+import { Booking } from "@/entity/booking.entity";
+import {
+  BookingCreationAttributes,
+  IBookingRepository,
+} from "@/interfaces/booking.repository.interface";
 
 export class BookingRepository implements IBookingRepository {
+  private bookingRepo = AppDataSource.getRepository(Booking);
+
   async findAll(options?: { limit?: number; offset?: number }) {
-    const queryOptions: any = {
-      include: [
-        {
-          model: Property,
-          as: "property",
-          attributes: ["id", "title", "pricePerNight"],
-        },
-      ],
-      order: [["created_at", "DESC"]],
+    const findOptions: any = {
+      relations: ["property"],
+      select: {
+        property: { id: true, title: true, pricePerNight: true },
+      },
+      order: { createdAt: "DESC" },
     };
 
-    if (options?.limit !== undefined) {
-      queryOptions.limit = options.limit;
+    if (typeof options?.offset === "number") {
+      findOptions.skip = options.offset;
     }
-    if (options?.offset !== undefined) {
-      queryOptions.offset = options.offset;
+    if (typeof options?.limit === "number") {
+      findOptions.take = options.limit;
     }
 
-    return await Booking.findAndCountAll(queryOptions);
+    return await this.bookingRepo.findAndCount(findOptions);
   }
 
   async findById(id: string) {
-    return await Booking.findByPk(id, {
-      include: [
-        {
-          model: Property,
-          as: "property",
-          attributes: ["id", "title", "pricePerNight"],
-        },
-      ],
+    return await this.bookingRepo.findOne({
+      where: { id },
+      relations: ["property"],
+      select: {
+        // property: { id: true, title: true, pricePerNight: true },
+      },
     });
   }
 
@@ -45,52 +45,46 @@ export class BookingRepository implements IBookingRepository {
     endDate: string,
     excludeBookingId?: string
   ) {
-    const whereClause: any = {
-      propertyId,
-      [Op.or]: [
-        {
-          startDate: {
-            [Op.between]: [startDate, endDate],
-          },
-        },
-        {
-          endDate: {
-            [Op.between]: [startDate, endDate],
-          },
-        },
-        {
-          [Op.and]: [
-            { startDate: { [Op.lte]: startDate } },
-            { endDate: { [Op.gte]: endDate } },
-          ],
-        },
-      ],
-    };
+    const whereClause: any = [
+      {
+        propertyId,
+        startDate: Between(startDate, endDate),
+      },
+      {
+        propertyId,
+        endDate: Between(startDate, endDate),
+      },
+      {
+        propertyId,
+        startDate: LessThanOrEqual(startDate),
+        endDate: MoreThanOrEqual(endDate),
+      },
+    ];
 
     if (excludeBookingId) {
-      whereClause.id = { [Op.ne]: excludeBookingId };
+      whereClause.forEach((clause: any) => {
+        clause.id = Not(excludeBookingId);
+      });
     }
 
-    return await Booking.findAll({
+    return await this.bookingRepo.find({
       where: whereClause,
     });
   }
 
   async create(bookingData: BookingCreationAttributes) {
-    return await Booking.create(bookingData);
+    const booking = this.bookingRepo.create(bookingData);
+    return await this.bookingRepo.save(booking);
   }
 
   async update(id: string, bookingData: Partial<BookingCreationAttributes>) {
-    const [updatedRowsCount] = await Booking.update(bookingData, {
-      where: { id },
-    });
-    return updatedRowsCount > 0;
+    const result = await this.bookingRepo.update(id, bookingData);
+    return result.affected !== undefined && result.affected > 0;
   }
 
   async delete(id: string) {
-    const deletedRowsCount = await Booking.destroy({
-      where: { id },
-    });
-    return deletedRowsCount > 0;
+    const result = await this.bookingRepo.delete(id);
+    return result.affected !== undefined;
+    //  && result.affected > 0;
   }
 }
