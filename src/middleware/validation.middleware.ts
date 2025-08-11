@@ -47,14 +47,14 @@ export const validatePropertyData = (
   res: Response,
   next: NextFunction
 ) => {
-  const { title, description, pricePerNight, availablFrom, availableTo } =
+  const { title, description, pricePerNight, availableFrom, availableTo } =
     req.body;
 
   if (
     !title ||
     !description ||
     !pricePerNight ||
-    !availablFrom ||
+    !availableFrom ||
     !availableTo
   ) {
     return res.status(400).json({
@@ -73,14 +73,19 @@ export const validatePropertyData = (
   }
 
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!dateRegex.test(availablFrom) || !dateRegex.test(availableTo)) {
+  const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?$/;
+
+  const isValidDateFormat = (date: string) =>
+    dateRegex.test(date) || isoRegex.test(date);
+
+  if (!isValidDateFormat(availableFrom) || !isValidDateFormat(availableTo)) {
     return res.status(400).json({
       success: false,
-      message: "Dates must be in YYYY-MM-DD format",
+      message: "Dates must be in YYYY-MM-DD or ISO format",
     });
   }
 
-  const start = new Date(availablFrom);
+  const start = new Date(availableFrom);
   const end = new Date(availableTo);
 
   if (isNaN(start.getTime()) || isNaN(end.getTime())) {

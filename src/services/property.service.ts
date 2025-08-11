@@ -1,5 +1,7 @@
-import { IPropertyRepository } from "@/interfaces/property.repository.interface";
-import { PropertyCreationAttributes } from "@/models/property.model";
+import {
+  IPropertyRepository,
+  PropertyCreationAttributes,
+} from "@/interfaces/property.repository.interface";
 
 export class PropertyService {
   private propertyRepository: IPropertyRepository;
@@ -31,11 +33,11 @@ export class PropertyService {
     const result = await this.propertyRepository.findAll(queryOptions);
 
     return {
-      properties: result.rows,
+      properties: result[0],
       pagination: {
         currentPage: page,
-        totalItems: result.count,
-        totalPages: Math.ceil(result.count / limit),
+        totalItems: result[1],
+        totalPages: Math.ceil(result[1] / limit),
         itemsPerPage: limit,
       },
     };
@@ -58,13 +60,13 @@ export class PropertyService {
     const bookings = (property as any).bookings || [];
     const availableRanges: Array<{ from: string; to: string }> = [];
 
-    const propertyStart = new Date(property.availablFrom);
+    const propertyStart = new Date(property.availableFrom);
     const propertyEnd = new Date(property.availableTo);
 
     if (bookings.length === 0) {
       availableRanges.push({
-        from: property.availablFrom,
-        to: property.availableTo,
+        from: propertyStart.toISOString().split("T")[0]!,
+        to: propertyEnd.toISOString().split("T")[0]!,
       });
     } else {
       const sortedBookings = bookings.sort(
@@ -95,7 +97,7 @@ export class PropertyService {
       if (currentDate <= propertyEnd) {
         availableRanges.push({
           from: currentDate.toISOString().split("T")[0]!,
-          to: property.availableTo,
+          to: propertyEnd.toISOString().split("T")[0]!,
         });
       }
     }
@@ -104,7 +106,7 @@ export class PropertyService {
       property: {
         id: property.id,
         title: property.title,
-        availableFrom: property.availablFrom,
+        availableFrom: property.availableFrom,
         availableTo: property.availableTo,
       },
       availableRanges,
@@ -116,7 +118,7 @@ export class PropertyService {
   }
 
   async createProperty(propertyData: PropertyCreationAttributes) {
-    const availableFrom = new Date(propertyData.availablFrom);
+    const availableFrom = new Date(propertyData.availableFrom);
     const availableTo = new Date(propertyData.availableTo);
 
     if (availableFrom >= availableTo) {

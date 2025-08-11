@@ -1,4 +1,5 @@
 import { Router } from "express";
+
 import { bookingRoutes } from "./booking.routes";
 import { propertyRoutes } from "./property.routes";
 

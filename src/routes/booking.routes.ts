@@ -5,7 +5,7 @@ import {
 } from "@/middleware/validation.middleware";
 import { PropertyRepository } from "@/repositories";
 import { BookingRepository } from "@/repositories/booking.repository";
-import { BookingService } from "@/services";
+import { BookingService } from "@/services/booking.service";
 import { Router } from "express";
 
 const router = Router();

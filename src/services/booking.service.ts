@@ -1,6 +1,8 @@
-import { IBookingRepository } from "@/interfaces/booking.repository.interface";
+import {
+  BookingCreationAttributes,
+  IBookingRepository,
+} from "@/interfaces/booking.repository.interface";
 import { IPropertyRepository } from "@/interfaces/property.repository.interface";
-import { BookingCreationAttributes } from "@/models/booking.model";
 
 export class BookingService {
   private bookingRepository: IBookingRepository;
@@ -22,11 +24,11 @@ export class BookingService {
     const result = await this.bookingRepository.findAll({ limit, offset });
 
     return {
-      bookings: result.rows,
+      bookings: result[0],
       pagination: {
         currentPage: page,
-        totalItems: result.count,
-        totalPages: Math.ceil(result.count / limit),
+        totalItems: result[1],
+        totalPages: Math.ceil(result[1] / limit),
         itemsPerPage: limit,
       },
     };
@@ -61,20 +63,23 @@ export class BookingService {
       throw new Error("Property not found");
     }
 
-    const propertyStart = new Date(property.availablFrom);
+    const propertyStart = new Date(property.availableFrom);
     const propertyEnd = new Date(property.availableTo);
 
     if (startDate < propertyStart || endDate > propertyEnd) {
       throw new Error(
-        `Property is only available from ${property.availablFrom} to ${property.availableTo}`
+        `Property is only available from ${property.availableFrom} to ${property.availableTo}`
       );
     }
+
+    const startDateObj = new Date(bookingData.startDate);
+    const endDateObj = new Date(bookingData.endDate);
 
     const conflictingBookings =
       await this.bookingRepository.findConflictingBookings(
         bookingData.propertyId,
-        bookingData.startDate,
-        bookingData.endDate
+        startDateObj.toISOString(),
+        endDateObj.toISOString()
       );
 
     if (conflictingBookings.length > 0) {
@@ -118,12 +123,12 @@ export class BookingService {
         throw new Error("Property not found");
       }
 
-      const propertyStart = new Date(property.availablFrom);
+      const propertyStart = new Date(property.availableFrom);
       const propertyEnd = new Date(property.availableTo);
 
       if (startDate < propertyStart || endDate > propertyEnd) {
         throw new Error(
-          `Property is only available from ${property.availablFrom} to ${property.availableTo}`
+          `Property is only available from ${property.availableFrom} to ${property.availableTo}`
         );
       }
 

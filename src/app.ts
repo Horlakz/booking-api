@@ -3,7 +3,7 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import logger from "morgan";
 
-import { connectDb } from "./config/db";
+import { connectDb } from "./config/data-source";
 import { errorHandler, notFoundHandler } from "./middleware";
 import { router } from "./routes";
 
