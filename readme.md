@@ -13,6 +13,8 @@ A RESTful API for property booking management built with Node.js, Express, TypeS
 
 ## API Documentation
 
+Full API documentation is available on [Postman](https://documenter.getpostman.com/view/26276921/2sB3BEoAF8).
+
 ## API Endpoints
 
 ### Properties
