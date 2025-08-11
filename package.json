@@ -18,7 +18,9 @@
     "express": "^5.1.0",
     "express-rate-limit": "^8.0.1",
     "morgan": "^1.10.1",
-    "sequelize-typescript": "^2.1.6"
+    "reflect-metadata": "^0.2.2",
+    "sequelize-typescript": "^2.1.6",
+    "typeorm": "^0.3.25"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
