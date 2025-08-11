@@ -11,6 +11,8 @@ A RESTful API for property booking management built with Node.js, Express, TypeS
 - Pagination support
 - Rate limiting
 
+## API Documentation
+
 ## API Endpoints
 
 ### Properties
@@ -18,7 +20,7 @@ A RESTful API for property booking management built with Node.js, Express, TypeS
 #### Get All Properties
 
 ```
-GET /api/properties
+GET /v1/properties
 ```
 
 Query Parameters:
@@ -31,13 +33,13 @@ Query Parameters:
 #### Get Property by ID
 
 ```
-GET /api/properties/:id
+GET /v1/properties/:id
 ```
 
 #### Get Property Availability
 
 ```
-GET /api/properties/:id/availability
+GET /v1/properties/:id/availability
 ```
 
 Returns available date ranges and existing bookings for a property.
@@ -45,7 +47,7 @@ Returns available date ranges and existing bookings for a property.
 #### Create Property (Admin)
 
 ```
-POST /api/properties
+POST /v1/properties
 ```
 
 Body:
@@ -65,7 +67,7 @@ Body:
 #### Get All Bookings
 
 ```
-GET /api/bookings
+GET /v1/bookings
 ```
 
 Query Parameters:
@@ -76,13 +78,13 @@ Query Parameters:
 #### Get Booking by ID
 
 ```
-GET /api/bookings/:id
+GET /v1/bookings/:id
 ```
 
 #### Create Booking
 
 ```
-POST /api/bookings
+POST /v1/bookings
 ```
 
 Body:
@@ -99,7 +101,7 @@ Body:
 #### Update Booking
 
 ```
-PUT /api/bookings/:id
+PUT /v1/bookings/:id
 ```
 
 Body (partial update allowed):
@@ -114,13 +116,13 @@ Body (partial update allowed):
 #### Cancel Booking
 
 ```
-DELETE /api/bookings/:id
+DELETE /v1/bookings/:id
 ```
 
 ### Health Check
 
 ```
-GET /api/health
+GET /v1/health
 ```
 
 ## Response Format
